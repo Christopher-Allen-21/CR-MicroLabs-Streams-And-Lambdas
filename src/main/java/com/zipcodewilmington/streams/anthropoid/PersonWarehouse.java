@@ -49,7 +49,7 @@ public final class PersonWarehouse implements Iterable<Person> {
      * @return list of uniquely named Person objects
      */ //TODO
     public Stream<Person> getUniquelyNamedPeople() {
-        return people.stream().distinct(); //Doesn't work for some reason smh
+        return people.stream().filter(distinctByKey(person -> person.getName()));
     }
 
 
@@ -60,7 +60,7 @@ public final class PersonWarehouse implements Iterable<Person> {
      * @return a Stream of respective
      */ //TODO
     public Stream<Person> getUniquelyNamedPeopleStartingWith(Character character) {
-        return null;
+        return people.stream().filter(person -> person.getName().charAt(0)==character);
     }
 
     /**
@@ -71,12 +71,16 @@ public final class PersonWarehouse implements Iterable<Person> {
         return people.stream().distinct().limit(n);
     }
 
+    public <Person>Predicate<Person> distinctByKey(Function<? super Person, ?> keyExtractor) {
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return Person -> seen.putIfAbsent(keyExtractor.apply(Person), Boolean.TRUE) == null;
+    }
+
     /**
      * @return a mapping of Person Id to the respective Person name
      */ // TODO
     public Map<Long, String> getIdToNameMap() {
-        //return people.stream().map();
-        return null;
+        return people.stream().collect(Collectors.toMap(Person::getPersonalId,Person::getName));
     }
 
 
